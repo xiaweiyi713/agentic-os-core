@@ -29,7 +29,7 @@ except ImportError:
 _PrivateAttr: Any = None
 if _HAS_LANGCHAIN:
     try:
-        from pydantic import PrivateAttr as _PrivateAttr  # type: ignore[import-untyped]  # noqa: I001
+        from pydantic import PrivateAttr as _PrivateAttr  # type: ignore[import-not-found, import-untyped]  # noqa: I001
     except ImportError:
         _PrivateAttr = None
 

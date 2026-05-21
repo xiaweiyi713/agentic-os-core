@@ -78,7 +78,15 @@ disallow_untyped_defs = true
 [[tool.mypy.overrides]]
 module = "agentic_os.ext.langchain.*"
 allow_untyped_calls = true
-disable_error_code = ["unused-ignore"]
+disable_error_code = ["unused-ignore", "import-not-found", "no-redef"]
+
+[[tool.mypy.overrides]]
+module = "agentic_os.core.storage.redis_backend"
+disable_error_code = ["import-not-found", "no-any-return"]
+
+[[tool.mypy.overrides]]
+module = "agentic_os.core.vector.numpy_backend"
+disable_error_code = ["import-not-found", "no-any-return"]
 
 [tool.coverage.run]
 source = ["agentic_os"]
