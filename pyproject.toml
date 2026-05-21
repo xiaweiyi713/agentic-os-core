@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-os-core"
+dynamic = ["version"]
+description = "A hardcore memory & planning engine for AI Agents — graph-based knowledge storage, MCTS tree-of-thoughts reasoning, and hierarchical goal planning. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["agent", "ai", "knowledge-graph", "mcts", "tree-of-thoughts", "memory", "planning", "reasoning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "hypothesis>=6.0",
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.20",
+]
+
+[project.urls]
+Homepage = "https://github.com/xuwenyao/agentic-os-core"
+Repository = "https://github.com/xuwenyao/agentic-os-core"
+Issues = "https://github.com/xuwenyao/agentic-os-core/issues"
+Documentation = "https://agentic-os-core.readthedocs.io"
+
+[tool.setuptools.dynamic]
+version = {attr = "agentic_os.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**" = ["RUF001"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["agentic_os"]
+omit = ["tests/*", "examples/*", "benchmarks/*"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
