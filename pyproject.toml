@@ -36,6 +36,9 @@ dev = [
     "mkdocs-material>=9.0",
     "mkdocstrings[python]>=0.20",
 ]
+numpy = ["numpy>=1.24"]
+langchain = ["langchain-core>=0.1"]
+llamaindex = ["llama-index>=0.10"]
 
 [project.urls]
 Homepage = "https://github.com/xuwenyao/agentic-os-core"
@@ -70,6 +73,11 @@ python_version = "3.10"
 strict = true
 warn_return_any = true
 disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "agentic_os.ext.langchain.*"
+allow_untyped_calls = true
+disable_error_code = ["unused-ignore"]
 
 [tool.coverage.run]
 source = ["agentic_os"]

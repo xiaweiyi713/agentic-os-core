@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from enum import Enum
 from typing import Any
 
@@ -17,6 +18,7 @@ from agentic_os.core.graph.node import (
 )
 from agentic_os.core.graph.scoring import get_most_important
 from agentic_os.core.graph.traversal import bfs, shortest_path
+from agentic_os.core.vector.base import VectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +47,23 @@ class LongTermMemory:
     facts, reflections, and goals.
     """
 
-    def __init__(self) -> None:
-        """Initialize with an empty knowledge graph and timeline."""
+    def __init__(
+        self,
+        vector_store: VectorStore | None = None,
+        embedder: Callable[[str], list[float]] | None = None,
+    ) -> None:
+        """Initialize with an empty knowledge graph and timeline.
+
+        Args:
+            vector_store: Optional vector store for similarity search.
+                When provided together with *embedder*, enables
+                :meth:`retrieve_similar` and :meth:`index_all`.
+            embedder: Optional callable that converts text to embedding vectors.
+        """
         self._graph = KnowledgeGraph()
         self._timeline: list[str] = []  # chronologically ordered node IDs
+        self._vector_store = vector_store
+        self._embedder = embedder
 
     @property
     def graph(self) -> KnowledgeGraph:
@@ -225,3 +240,61 @@ class LongTermMemory:
             Dict of statistical key-value pairs.
         """
         return self._graph.stats()
+
+    def retrieve_similar(self, query: str, top_k: int = 10) -> list[MemoryNode]:
+        """Retrieve memory nodes whose content is semantically similar to *query*.
+
+        Requires both ``vector_store`` and ``embedder`` to have been provided
+        at construction time.  Falls back to an empty list when either is
+        missing.
+
+        Args:
+            query: Text to search for.
+            top_k: Maximum number of results.
+
+        Returns:
+            List of :class:`~agentic_os.core.graph.node.MemoryNode` sorted by
+            descending similarity.
+
+        Raises:
+            RuntimeError: If ``vector_store`` or ``embedder`` is not configured.
+        """
+        if self._vector_store is None or self._embedder is None:
+            raise RuntimeError(
+                "retrieve_similar requires both vector_store and embedder "
+                "to be provided at construction time."
+            )
+        query_vec = self._embedder(query)
+        hits = self._vector_store.search(query_vec, top_k=top_k)
+        nodes: list[MemoryNode] = []
+        for hit in hits:
+            node = self._graph.get_node(hit.id)
+            if node is not None:
+                nodes.append(node)
+        logger.debug("retrieve_similar: query=%r top_k=%d returned=%d", query[:40], top_k, len(nodes))
+        return nodes
+
+    def index_all(self) -> int:
+        """Build vector indices for all existing memory nodes.
+
+        Requires both ``vector_store`` and ``embedder`` to have been provided
+        at construction time.
+
+        Returns:
+            The number of nodes indexed.
+
+        Raises:
+            RuntimeError: If ``vector_store`` or ``embedder`` is not configured.
+        """
+        if self._vector_store is None or self._embedder is None:
+            raise RuntimeError(
+                "index_all requires both vector_store and embedder "
+                "to be provided at construction time."
+            )
+        count = 0
+        for node in self._graph.nodes:
+            vec = self._embedder(node.content)
+            self._vector_store.add(node.id, vec, {"content": node.content, "type": node.type.value})
+            count += 1
+        logger.debug("index_all: indexed %d nodes", count)
+        return count

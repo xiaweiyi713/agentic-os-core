@@ -47,15 +47,21 @@ from agentic_os.core.graph.node import (
 from agentic_os.core.memory.longterm import LongTermMemory as LongTermMemory
 from agentic_os.core.memory.longterm import RetrievalStrategy as RetrievalStrategy
 from agentic_os.core.memory.manager import MemoryManager as MemoryManager
+from agentic_os.core.memory.shared import AgentMemoryHandle as AgentMemoryHandle
+from agentic_os.core.memory.shared import SharedMemoryGraph as SharedMemoryGraph
 from agentic_os.core.memory.working import WorkingMemory as WorkingMemory
 from agentic_os.core.planning.executor import Executor as Executor
 from agentic_os.core.planning.goal import Goal as Goal
 from agentic_os.core.planning.goal import GoalPriority as GoalPriority
 from agentic_os.core.planning.goal import GoalState as GoalState
 from agentic_os.core.planning.planner import Planner as Planner
+from agentic_os.core.tree.async_mcts import AsyncMCTS as AsyncMCTS
 from agentic_os.core.tree.mcts import MCTS as MCTS
 from agentic_os.core.tree.thought_node import ThoughtNode as ThoughtNode
 from agentic_os.core.tree.thought_tree import ThoughtTree as ThoughtTree
+from agentic_os.core.vector.base import SearchResult as SearchResult
+from agentic_os.core.vector.base import VectorStore as VectorStore
+from agentic_os.core.vector.numpy_backend import NumpyVectorStore as NumpyVectorStore
 from agentic_os.exceptions import (
     AgenticOSError as AgenticOSError,
 )
@@ -92,6 +98,18 @@ from agentic_os.exceptions import (
 from agentic_os.exceptions import (
     ValidationError as ValidationError,
 )
+from agentic_os.ext.langchain.memory import AgenticOSMemory as AgenticOSMemory
+from agentic_os.ext.langchain.retriever import AgenticOSRetriever as AgenticOSRetriever
+from agentic_os.ext.langchain.tool import AgenticOSGraphTool as AgenticOSGraphTool
+from agentic_os.ext.llamaindex.vector_store import (
+    AgenticOSVectorStore as AgenticOSVectorStore,
+)
+from agentic_os.ext.visualization.graph_visualizer import (
+    KnowledgeGraphVisualizer as KnowledgeGraphVisualizer,
+)
+from agentic_os.ext.visualization.tree_visualizer import (
+    ThoughtTreeVisualizer as ThoughtTreeVisualizer,
+)
 from agentic_os.plugins.base import ActionExecutor as ActionExecutor
 from agentic_os.plugins.base import Evaluator as BaseEvaluator
 from agentic_os.plugins.base import LLMBackend as LLMBackend
@@ -99,7 +117,13 @@ from agentic_os.plugins.base import LLMBackend as LLMBackend
 __all__ = [
     "MCTS",
     "ActionExecutor",
+    "AgentMemoryHandle",
     "AgenticOSError",
+    "AgenticOSGraphTool",
+    "AgenticOSMemory",
+    "AgenticOSRetriever",
+    "AgenticOSVectorStore",
+    "AsyncMCTS",
     "BaseEvaluator",
     "CyclicGraphError",
     "DepthExceededError",
@@ -114,6 +138,7 @@ __all__ = [
     "GoalState",
     "GraphError",
     "KnowledgeGraph",
+    "KnowledgeGraphVisualizer",
     "LLMBackend",
     "LongTermMemory",
     "MaxChildrenExceededError",
@@ -122,12 +147,17 @@ __all__ = [
     "MemoryNode",
     "NodeNotFoundError",
     "NodeType",
+    "NumpyVectorStore",
     "Planner",
     "RetrievalStrategy",
+    "SearchResult",
+    "SharedMemoryGraph",
     "ThoughtNode",
     "ThoughtTree",
+    "ThoughtTreeVisualizer",
     "TreeError",
     "ValidationError",
+    "VectorStore",
     "WorkingMemory",
     "create_episode",
     "create_fact",
