@@ -114,10 +114,10 @@ class TestKnowledgeGraphVisualizer:
         with tempfile.TemporaryDirectory() as tmp:
             html_str = viz.to_html(kg, str(Path(tmp) / "colors.html"))
         # Check that the _NODE_COLORS mapping is inlined
-        assert "#4A90D9" in html_str  # episode blue
-        assert "#27AE60" in html_str  # fact green
-        assert "#F5A623" in html_str  # reflection orange
-        assert "#E74C3C" in html_str  # goal red
+        assert "#60A5FA" in html_str  # episode blue
+        assert "#34D399" in html_str  # fact green
+        assert "#FBBF24" in html_str  # reflection amber
+        assert "#F87171" in html_str  # goal red
 
     def test_writes_file_to_disk(self) -> None:
         """The output file should be written and contain the HTML."""
@@ -174,7 +174,7 @@ class TestThoughtTreeVisualizer:
             assert Path(path).exists()
         assert "<!DOCTYPE html>" in html_str
         assert "</html>" in html_str
-        assert "const thoughtsData = [];" in html_str or "const thoughtsData=[];" in html_str.replace(" ", "")
+        assert "const thoughts = [];" in html_str or "const thoughts=[];" in html_str.replace(" ", "")
 
     def test_best_path_highlighted(self) -> None:
         """The best path IDs must be embedded in the HTML for highlighting."""
