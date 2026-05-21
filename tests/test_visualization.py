@@ -9,8 +9,6 @@ from agentic_os import (
     EdgeType,
     KnowledgeGraph,
     KnowledgeGraphVisualizer,
-    NodeType,
-    ThoughtNode,
     ThoughtTree,
     ThoughtTreeVisualizer,
     create_episode,
@@ -18,7 +16,6 @@ from agentic_os import (
     create_goal,
     create_reflection,
 )
-
 
 # ------------------------------------------------------------------
 # Helpers

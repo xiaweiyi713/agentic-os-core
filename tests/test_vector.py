@@ -1,17 +1,15 @@
 """向量相似度检索系统测试"""
 
 import math
-import tempfile
 from pathlib import Path
 
 import pytest
-
-np = pytest.importorskip("numpy")
 
 from agentic_os.core.memory.longterm import LongTermMemory
 from agentic_os.core.vector.base import SearchResult, VectorStore
 from agentic_os.core.vector.numpy_backend import NumpyVectorStore
 
+np = pytest.importorskip("numpy")
 
 # ---------------------------------------------------------------------------
 # 辅助函数

@@ -1,6 +1,6 @@
 """补充测试覆盖率 -- 覆盖 mcts.py、traversal.py、hashing.py 的缺失行。"""
 
-from agentic_os.core.graph.edge import Edge, EdgeType
+from agentic_os.core.graph.edge import EdgeType
 from agentic_os.core.graph.knowledge_graph import KnowledgeGraph
 from agentic_os.core.graph.node import create_episode
 from agentic_os.core.graph.traversal import (
@@ -13,7 +13,6 @@ from agentic_os.core.tree.mcts import MCTS
 from agentic_os.core.tree.thought_node import ThoughtNode
 from agentic_os.core.tree.thought_tree import ThoughtTree
 from agentic_os.utils.hashing import combined_id
-
 
 # ---------------------------------------------------------------------------
 # mcts.py 缺失行: 69, 122, 147, 174, 223, 225
@@ -48,8 +47,6 @@ class TestMCTSExpandAllFail:
 
     def test_search_continues_when_expand_returns_none(self):
         """行 122: search 中 expanded is None 时 continue，树保持只有根节点。"""
-        mcts = MCTS(exploration_weight=1.0, max_iterations=5, max_depth=10)
-
         # 使用 max_children=0 的 tree 内部：但 search 方法会创建自己的 tree
         # 所以我们利用 generator 返回已被添加过的相同 thought 来触发 add_thought 返回 None
         # 实际上更直接的方式：使用 max_children=0 无法实现，因为 search 硬编码 max_children=20

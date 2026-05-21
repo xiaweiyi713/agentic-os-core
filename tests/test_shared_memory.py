@@ -5,7 +5,7 @@ from __future__ import annotations
 import threading
 
 from agentic_os.core.graph.edge import EdgeType
-from agentic_os.core.graph.node import MemoryNode, NodeType, create_episode, create_fact
+from agentic_os.core.graph.node import MemoryNode, NodeType, create_fact
 from agentic_os.core.memory.shared import AgentMemoryHandle, SharedMemoryGraph
 
 
@@ -22,7 +22,7 @@ class TestRegisterAgent:
         shared.register_agent("alice")
         try:
             shared.register_agent("alice")
-            assert False, "Expected ValueError"
+            raise AssertionError("Expected ValueError")
         except ValueError:
             pass
 
@@ -107,7 +107,7 @@ class TestShareWith:
         nid = alice.store_episode("Some content")
         try:
             alice.share_with(nid, "unknown_agent")
-            assert False, "Expected ValueError"
+            raise AssertionError("Expected ValueError")
         except ValueError:
             pass
 

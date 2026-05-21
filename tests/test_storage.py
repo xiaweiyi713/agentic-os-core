@@ -1,13 +1,11 @@
 """Tests for SQLite storage backend."""
 
-import json
 import os
 import tempfile
 
 from agentic_os.core.graph.edge import EdgeType
 from agentic_os.core.graph.knowledge_graph import KnowledgeGraph
 from agentic_os.core.graph.node import (
-    MemoryNode,
     NodeType,
     create_episode,
     create_fact,

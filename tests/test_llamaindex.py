@@ -9,10 +9,9 @@ import pytest
 
 from agentic_os.core.vector.base import SearchResult
 from agentic_os.ext.llamaindex.vector_store import (
-    AgenticOSVectorStore,
     _HAS_LLAMAINDEX,
+    AgenticOSVectorStore,
 )
-
 
 # ---------------------------------------------------------------------------
 # Lightweight mocks that mimic LlamaIndex objects without requiring the package
@@ -40,7 +39,7 @@ class MockVectorStore:
         results: list[SearchResult] = []
         for id_, data in self._data.items():
             # Simple dot-product similarity
-            score = sum(a * b for a, b in zip(query_vector, data["vector"]))
+            score = sum(a * b for a, b in zip(query_vector, data["vector"], strict=False))
             results.append(
                 SearchResult(id=id_, score=score, metadata=data["metadata"])
             )
