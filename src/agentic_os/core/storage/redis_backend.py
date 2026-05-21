@@ -125,6 +125,7 @@ class RedisStorage(StorageBackend):
                 kg._in_edges[edge.target_id][edge.source_id] = edge
 
         logger.info("load_graph: loaded %d nodes", kg.node_count)
+        kg._sync_edge_count()
         return kg
 
     def save_node(self, node: MemoryNode) -> None:

@@ -37,6 +37,7 @@ class KnowledgeGraph:
         self._in_edges: dict[str, dict[str, Edge]] = defaultdict(dict)
         self._keyword_index: dict[str, set[str]] = defaultdict(set)
         self._type_index: dict[NodeType, set[str]] = defaultdict(set)
+        self._edge_count: int = 0
 
     def __repr__(self) -> str:
         return f"KnowledgeGraph(nodes={self.node_count}, edges={self.edge_count})"
@@ -55,6 +56,11 @@ class KnowledgeGraph:
             kg.add_node(create_fact("Earth orbits the Sun"))
         """
         logger.debug("add_node id=%s type=%s", node.id, node.type.value)
+        old = self._nodes.get(node.id)
+        if old is not None:
+            self._type_index[old.type].discard(node.id)
+            for kw in self._tokenize(old.content):
+                self._keyword_index[kw].discard(node.id)
         self._nodes[node.id] = node
         self._type_index[node.type].add(node.id)
         for kw in self._tokenize(node.content):
@@ -81,6 +87,9 @@ class KnowledgeGraph:
         for kw in self._tokenize(node.content):
             self._keyword_index[kw].discard(node_id)
         # Remove associated edges
+        out_count = len(self._out_edges.get(node_id, {}))
+        in_count = len(self._in_edges.get(node_id, {}))
+        self._edge_count -= out_count + in_count
         for tgt_id in list(self._out_edges.get(node_id, {})):
             self._in_edges[tgt_id].pop(node_id, None)
         self._out_edges.pop(node_id, None)
@@ -176,12 +185,17 @@ class KnowledgeGraph:
         """
         kw = keyword.lower()
         # Try exact keyword match first
-        node_ids = self._keyword_index.get(kw, set()).copy()
+        matched = self._keyword_index.get(kw)
+        if matched:
+            ids = set(matched)
+            if node_type is not None:
+                ids &= self._type_index.get(node_type, set())
+            return [self._nodes[nid] for nid in ids if nid in self._nodes]
         # Fall back to substring match (e.g. Chinese without spaces)
-        if not node_ids:
-            for node in self._nodes.values():
-                if kw in node.content.lower():
-                    node_ids.add(node.id)
+        node_ids: set[str] = set()
+        for node in self._nodes.values():
+            if kw in node.content.lower():
+                node_ids.add(node.id)
         if node_type is not None:
             node_ids &= self._type_index.get(node_type, set())
         return [self._nodes[nid] for nid in node_ids if nid in self._nodes]
@@ -212,8 +226,11 @@ class KnowledgeGraph:
             return None
         edge = Edge(source_id=source_id, target_id=target_id,
                     type=edge_type, weight=weight, metadata=metadata)
+        existing = self._out_edges[source_id].get(target_id)
         self._out_edges[source_id][target_id] = edge
         self._in_edges[target_id][source_id] = edge
+        if existing is None:
+            self._edge_count += 1
         logger.debug("add_edge %s -> %s type=%s", source_id, target_id, edge_type.value)
         return edge
 
@@ -234,6 +251,7 @@ class KnowledgeGraph:
         edge = self._out_edges.get(source_id, {}).pop(target_id, None)
         if edge is not None:
             self._in_edges.get(target_id, {}).pop(source_id, None)
+            self._edge_count -= 1
         else:
             logger.warning("remove_edge edge not found: %s -> %s", source_id, target_id)
         return edge
@@ -264,8 +282,12 @@ class KnowledgeGraph:
 
     @property
     def edge_count(self) -> int:
-        """Return the total number of directed edges. O(V) scan."""
-        return sum(len(targets) for targets in self._out_edges.values())
+        """Return the total number of directed edges. O(1)."""
+        return self._edge_count
+
+    def _sync_edge_count(self) -> None:
+        """Recompute _edge_count from scratch (used after bulk internal mutations)."""
+        self._edge_count = sum(len(targets) for targets in self._out_edges.values())
 
     # ── Neighbour queries ──
 

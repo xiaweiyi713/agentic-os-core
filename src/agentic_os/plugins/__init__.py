@@ -8,3 +8,8 @@ from agentic_os.plugins.mock import MockEvaluator as MockEvaluator
 from agentic_os.plugins.mock import MockExecutor as MockExecutor
 from agentic_os.plugins.mock import MockLLM as MockLLM
 from agentic_os.plugins.mock import MockMemoryStore as MockMemoryStore
+
+__all__ = [
+    "ActionExecutor", "Evaluator", "LLMBackend", "MemoryStore",
+    "MockEvaluator", "MockExecutor", "MockLLM", "MockMemoryStore",
+]

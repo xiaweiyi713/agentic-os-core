@@ -72,7 +72,7 @@ def depth_prune(tree: ThoughtTree, max_depth: int) -> int:
         nonlocal removed
         if depth >= max_depth:
             for child in node.children:
-                removed += _count_subtree(child)
+                removed += child.subtree_size()
             node.children = []
             return
         for child in node.children:
@@ -129,7 +129,7 @@ def redundancy_prune(tree: ThoughtTree, similarity_fn: Callable[[str, str], floa
                     is_redundant = True
                     break
             if is_redundant:
-                removed += _count_subtree(child)
+                removed += child.subtree_size()
             else:
                 to_keep.append(child)
 
@@ -141,18 +141,3 @@ def redundancy_prune(tree: ThoughtTree, similarity_fn: Callable[[str, str], floa
         _prune(tree.root)
     logger.info("redundancy_prune: removed %d nodes", removed)
     return removed
-
-
-def _count_subtree(node: ThoughtNode) -> int:
-    """Return the total number of nodes in the subtree rooted at *node*.
-
-    Args:
-        node: The root of the subtree to count.
-
-    Returns:
-        Number of nodes (inclusive of *node* itself).
-    """
-    count = 1
-    for child in node.children:
-        count += _count_subtree(child)
-    return count

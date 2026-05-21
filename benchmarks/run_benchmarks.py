@@ -6,6 +6,7 @@ Usage:
 
 import logging
 import platform
+import random
 import statistics
 import time
 
@@ -79,10 +80,10 @@ def main():
     large_kg = _build_large_graph(1000)
     all_results.append(bench("KG: build 1000-node graph", lambda: _build_large_graph(1000), 10))
     all_results.append(bench("KG[1000]: find_nodes", lambda: large_kg.find_nodes("node"), 200))
-    all_results.append(bench("KG[1000]: subgraph(depth=3)", lambda: large_kg.subgraph(large_kg._nodes.__iter__().__next__(), 3), 100))
+    all_results.append(bench("KG[1000]: subgraph(depth=3)", lambda: large_kg.subgraph(next(n.id for n in large_kg.nodes), 3), 100))
 
     # Traversal
-    first_node = next(iter(large_kg._nodes))
+    first_node = next(n.id for n in large_kg.nodes)
     all_results.append(bench("KG[1000]: BFS", lambda: bfs(large_kg, first_node), 50))
     all_results.append(bench("KG[1000]: shortest_path", lambda: _find_path(large_kg), 50))
 
@@ -179,22 +180,19 @@ def _add_nodes(kg, n):
         kg.add_node(create_episode(f"node_{_next_id()}"))
 
 def _add_random_edge(kg):
-    nodes = list(kg._nodes.keys())
+    nodes = [n.id for n in kg.nodes]
     if len(nodes) < 2:
         return
-    import random
     a, b = random.sample(nodes, 2)
     kg.add_edge(a, b, EdgeType.ASSOCIATIVE, 0.5)
 
 def _get_node(kg):
-    import random
-    nodes = list(kg._nodes.keys())
+    nodes = [n.id for n in kg.nodes]
     if nodes:
         kg.get_node(random.choice(nodes))
 
 def _get_neighbors(kg):
-    import random
-    nodes = list(kg._nodes.keys())
+    nodes = [n.id for n in kg.nodes]
     if nodes:
         kg.out_neighbors(random.choice(nodes))
 
@@ -203,14 +201,13 @@ def _build_large_graph(n):
     nodes = [create_episode(f"node_{i} test data point") for i in range(n)]
     for node in nodes:
         kg.add_node(node)
-    import random
     for _i in range(n * 2):
         a, b = random.sample(nodes, 2)
         kg.add_edge(a.id, b.id, EdgeType.ASSOCIATIVE, random.random())
     return kg
 
 def _find_path(kg):
-    nodes = list(kg._nodes.keys())
+    nodes = [n.id for n in kg.nodes]
     if len(nodes) >= 2:
         shortest_path(kg, nodes[0], nodes[-1])
 

@@ -54,6 +54,7 @@ from agentic_os.core.planning.executor import Executor as Executor
 from agentic_os.core.planning.goal import Goal as Goal
 from agentic_os.core.planning.goal import GoalPriority as GoalPriority
 from agentic_os.core.planning.goal import GoalState as GoalState
+from agentic_os.core.planning.goal import create_goal as create_planning_goal
 from agentic_os.core.planning.planner import Planner as Planner
 from agentic_os.core.tree.async_mcts import AsyncMCTS as AsyncMCTS
 from agentic_os.core.tree.mcts import MCTS as MCTS
@@ -113,6 +114,11 @@ from agentic_os.ext.visualization.tree_visualizer import (
 from agentic_os.plugins.base import ActionExecutor as ActionExecutor
 from agentic_os.plugins.base import Evaluator as BaseEvaluator
 from agentic_os.plugins.base import LLMBackend as LLMBackend
+from agentic_os.plugins.base import MemoryStore as MemoryStore
+from agentic_os.plugins.mock import MockEvaluator as MockEvaluator
+from agentic_os.plugins.mock import MockExecutor as MockExecutor
+from agentic_os.plugins.mock import MockLLM as MockLLM
+from agentic_os.plugins.mock import MockMemoryStore as MockMemoryStore
 
 __all__ = [
     "MCTS",
@@ -145,6 +151,11 @@ __all__ = [
     "MemoryCapacityError",
     "MemoryManager",
     "MemoryNode",
+    "MemoryStore",
+    "MockEvaluator",
+    "MockExecutor",
+    "MockLLM",
+    "MockMemoryStore",
     "NodeNotFoundError",
     "NodeType",
     "NumpyVectorStore",
@@ -162,5 +173,6 @@ __all__ = [
     "create_episode",
     "create_fact",
     "create_goal",
+    "create_planning_goal",
     "create_reflection",
 ]

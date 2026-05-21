@@ -69,3 +69,6 @@ dmypy.json
 
 # Type stubs
 *.pyi
+
+# MkDocs build output
+site/

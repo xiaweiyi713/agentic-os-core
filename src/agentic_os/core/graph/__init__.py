@@ -21,3 +21,8 @@ from agentic_os.core.graph.node import (
 from agentic_os.core.graph.node import (
     create_reflection as create_reflection,
 )
+
+__all__ = [
+    "Edge", "EdgeType", "KnowledgeGraph", "MemoryNode", "NodeType",
+    "create_episode", "create_fact", "create_goal", "create_reflection",
+]

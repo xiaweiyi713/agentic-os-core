@@ -93,7 +93,7 @@ class ThoughtTree:
             logger.warning("add_thought: max_children %d reached for parent at depth %d", self.max_children, parent.depth)
             return None
         child = ThoughtNode(thought=thought, state=state or {},
-                            score=score, parent=parent)
+                            score=score, parent=parent, _depth=parent.depth + 1)
         parent.children.append(child)
         self._size += 1
         logger.debug("add_thought: added %r at depth %d score=%.2f", thought[:30], child.depth, score)
@@ -186,7 +186,7 @@ class ThoughtTree:
                 if child.score >= min_score:
                     to_keep.append(child)
                 else:
-                    removed += _count_subtree(child)
+                    removed += child.subtree_size()
             node.children = to_keep
             for child in to_keep:
                 _prune(child)
@@ -238,18 +238,3 @@ class ThoughtTree:
         for i, child in enumerate(self.root.children):
             _render(child, "", i == len(self.root.children) - 1)
         return "\n".join(lines)
-
-
-def _count_subtree(node: ThoughtNode) -> int:
-    """Return the total number of nodes in the subtree rooted at *node*.
-
-    Args:
-        node: The root of the subtree to count.
-
-    Returns:
-        Number of nodes (inclusive of *node* itself).
-    """
-    count = 1
-    for child in node.children:
-        count += _count_subtree(child)
-    return count

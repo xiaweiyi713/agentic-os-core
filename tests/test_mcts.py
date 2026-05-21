@@ -230,3 +230,33 @@ class TestPruning:
 
         removed = redundancy_prune(tree, sim)
         assert removed >= 1
+
+
+class TestSubtreeSize:
+    """Tests for ThoughtNode.subtree_size()."""
+
+    def test_single_node(self):
+        node = ThoughtNode(thought="root")
+        assert node.subtree_size() == 1
+
+    def test_with_children(self):
+        root = ThoughtNode(thought="root")
+        a = ThoughtNode(thought="a", parent=root)
+        b = ThoughtNode(thought="b", parent=root)
+        root.children = [a, b]
+        assert root.subtree_size() == 3
+
+    def test_deep_tree(self):
+        root = ThoughtNode(thought="root")
+        c1 = ThoughtNode(thought="c1", parent=root)
+        c2 = ThoughtNode(thought="c2", parent=c1)
+        c3 = ThoughtNode(thought="c3", parent=c2)
+        root.children = [c1]
+        c1.children = [c2]
+        c2.children = [c3]
+        assert root.subtree_size() == 4
+        assert c1.subtree_size() == 3
+
+    def test_leaf_returns_one(self):
+        leaf = ThoughtNode(thought="leaf")
+        assert leaf.subtree_size() == 1

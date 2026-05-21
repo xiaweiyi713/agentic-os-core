@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock
 
 from agentic_os.core.tree.async_mcts import AsyncMCTS
 from agentic_os.core.tree.mcts import MCTS
-from agentic_os.core.tree.thought_tree import ThoughtTree
 
 
 class TestAsyncMCTSBasic:

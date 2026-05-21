@@ -9,8 +9,8 @@ Graph-based knowledge storage · MCTS tree-of-thoughts reasoning · Hierarchical
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/xuwenyao/agentic-os-core/actions/workflows/ci.yml/badge.svg)](https://github.com/xuwenyao/agentic-os-core/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-172%20passed-brightgreen.svg)](./tests)
-[![Coverage](https://img.shields.io/badge/coverage-96.8%25-brightgreen.svg)](./tests)
+[![Tests](https://img.shields.io/badge/tests-330%20passed-brightgreen.svg)](./tests)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen.svg)](./tests)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](./docs)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-green.svg)](./pyproject.toml)
 
@@ -30,8 +30,12 @@ Instead of dumping everything into a vector DB, you get:
 - **MCTS Tree-of-Thoughts** — a full Monte Carlo Tree Search engine with UCB1 selection, configurable exploration/exploitation, and multiple pruning strategies (score threshold, depth limit, redundancy removal).
 - **Hierarchical Memory** — a working memory (LRU, O(1) ops) that consolidates into a long-term graph store, with pluggable consolidation strategies (simple, importance-filtered, pattern-extracting).
 - **Goal Planner** — decomposes goals into sub-goals, generates topologically-sorted execution plans, evaluates plans with ToT, and supports retry/replanning on failure.
+- **Persistent Storage** — SQLite built-in for production use, Redis optional for distributed deployments.
+- **Vector Similarity** — NumPy-based cosine similarity built-in, with adapters for FAISS/Milvus/ChromaDB.
+- **Multi-Agent Shared Memory** — namespace-isolated shared knowledge graph with agent-level access control.
+- **Interactive Visualization** — D3.js-powered HTML visualizations for knowledge graphs and thought trees.
 
-**Zero external dependencies.** Pure Python 3.10+, using only `dataclasses`, `collections`, `heapq`, and `json`.
+**Zero external core dependencies.** Pure Python 3.10+, using only `dataclasses`, `collections`, `heapq`, and `json`.
 
 ## 概述
 
@@ -41,18 +45,22 @@ Instead of dumping everything into a vector DB, you get:
 - **MCTS 思维树** — 完整的蒙特卡洛树搜索引擎，UCB1 + 多种剪枝策略
 - **层级记忆** — LRU 工作记忆 → 图存储长期记忆，可插拔巩固策略
 - **目标规划器** — 目标分解、拓扑排序执行计划、失败重试/重规划
+- **持久化存储** — 内置 SQLite，可选 Redis 分布式后端
+- **向量检索** — 内置 NumPy 余弦相似度，支持 FAISS/Milvus/ChromaDB
+- **多 Agent 共享记忆** — 命名空间隔离的共享知识图谱
+- **交互式可视化** — 基于 D3.js 的知识图谱和思维树 HTML 可视化
 
-**零外部依赖**，纯 Python 3.10+ 标准库实现。
+**零核心外部依赖**，纯 Python 3.10+ 标准库实现。
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Agent Loop                        │
-│  Perceive → Remember → Plan → Execute → Reflect     │
-└───────────┬──────────┬──────────┬───────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                       Agent Loop                          │
+│   Perceive → Remember → Plan → Execute → Reflect         │
+└───────────┬──────────┬──────────┬────────────────────────┘
             │          │          │
   ┌─────────▼──┐  ┌────▼────┐  ┌─▼──────────┐
   │  Memory    │  │ Planning│  │  Plugins    │
@@ -65,14 +73,18 @@ Instead of dumping everything into a vector DB, you get:
   │ Memory(KG) │       │
   └─────┬──────┘  ┌────▼────┐
         │         │   MCTS  │
-  ┌─────▼──────┐  │ Engine  │
-  │ Knowledge  │  │ (ToT)   │
-  │ Graph      │  └─────────┘
-  │ ┌────────┐ │
-  │ │ Nodes  │ │  Node Types: Episode / Fact / Reflection / Goal
-  │ │ Edges  │ │  Edge Types: Causal / Temporal / Associative / ...
-  │ │ Index  │ │  Algorithms: BFS / DFS / Dijkstra / PageRank / TopoSort
-  │ └────────┘ │
+  ┌─────▼──────┐  │ Engine  │     ┌───────────────┐
+  │ Knowledge  │  │ (ToT)   │     │  Extensions    │
+  │ Graph      │  └─────────┘     ├───────────────┤
+  │ ┌────────┐ │                  │  LangChain     │
+  │ │ Nodes  │ │  Node Types:     │  LlamaIndex    │
+  │ │ Edges  │ │  Episode/Fact/   │  Visualization │
+  │ │ Index  │ │  Reflection/Goal │  Shared Memory │
+  │ └────────┘ │                  │  Vector Store  │
+  └────────────┘                  └───────────────┘
+        ↕
+  ┌────────────┐
+  │  Storage   │  SQLite (built-in) / Redis (optional)
   └────────────┘
 ```
 
@@ -82,6 +94,15 @@ Instead of dumping everything into a vector DB, you get:
 
 ```bash
 pip install agentic-os-core
+```
+
+Optional extras:
+
+```bash
+pip install agentic-os-core[numpy]       # Vector similarity search
+pip install agentic-os-core[langchain]    # LangChain integration
+pip install agentic-os-core[llamaindex]   # LlamaIndex integration
+pip install agentic-os-core[dev]          # Test + lint tools
 ```
 
 Or from source:
@@ -167,10 +188,10 @@ memory.link_memories(f1, f2, EdgeType.CAUSAL, weight=0.95)
 ### 4. Goal Planning
 
 ```python
-from agentic_os import Planner, Executor, GoalPriority, create_goal
+from agentic_os import Planner, Executor, GoalPriority, create_planning_goal
 
 planner = Planner()
-root = create_goal("构建 Web 服务", priority=GoalPriority.HIGH)
+root = create_planning_goal("构建 Web 服务", priority=GoalPriority.HIGH)
 planner.add_goal(root)
 
 # Decompose
@@ -183,6 +204,41 @@ plan = planner.create_plan(root)
 executor = Executor(planner)
 logs = executor.execute_plan(plan, lambda g: (True, f"Done: {g.description}"))
 print(f"Success: {executor.success_count}, Failed: {executor.failure_count}")
+```
+
+### 5. Persistent Storage
+
+```python
+from agentic_os import KnowledgeGraph, create_fact
+from agentic_os.core.storage import SqliteStorage
+
+kg = KnowledgeGraph()
+kg.add_node(create_fact("Python is great", importance=0.9))
+
+# Save to SQLite
+with SqliteStorage("my_agent.db") as store:
+    store.save_graph(kg)
+
+# Load later
+with SqliteStorage("my_agent.db") as store:
+    loaded = store.load_graph()
+```
+
+### 6. Multi-Agent Shared Memory
+
+```python
+from agentic_os import SharedMemoryGraph
+
+shared = SharedMemoryGraph()
+alice = shared.register_agent("alice")
+bob = shared.register_agent("bob")
+
+# Alice stores and shares knowledge
+nid = alice.store_fact("Redis supports pub/sub")
+alice.share_with(nid, "bob")
+
+# Bob retrieves shared knowledge
+bob_knowledge = bob.retrieve("Redis", include_shared=True)
 ```
 
 ---
@@ -266,17 +322,36 @@ src/agentic_os/
 │   │   ├── thought_node.py     # ThoughtNode with UCB1 stats
 │   │   ├── thought_tree.py     # Tree management + visualization
 │   │   ├── mcts.py             # Full MCTS implementation
+│   │   ├── async_mcts.py       # Async MCTS with concurrent rollouts
 │   │   ├── search.py           # UCB1, Best-First, Beam Search
 │   │   └── pruning.py          # Score/depth/redundancy pruning
 │   ├── memory/         # Memory Management
 │   │   ├── working.py          # LRU short-term memory
 │   │   ├── longterm.py         # Graph-backed long-term memory
 │   │   ├── manager.py          # Unified memory orchestrator
-│   │   └── consolidation.py    # 3 consolidation strategies
-│   └── planning/       # Planning Engine
-│       ├── goal.py             # Goal with priority + state machine
-│       ├── planner.py          # Decomposition + ToT evaluation
-│       └── executor.py         # Execution with retry + logging
+│   │   ├── consolidation.py    # 3 consolidation strategies
+│   │   └── shared.py           # Multi-agent shared memory graph
+│   ├── planning/       # Planning Engine
+│   │   ├── goal.py             # Goal with priority + state machine
+│   │   ├── planner.py          # Decomposition + ToT evaluation
+│   │   └── executor.py         # Execution with retry + logging
+│   ├── storage/        # Persistent Storage
+│   │   ├── base.py             # StorageBackend ABC
+│   │   ├── sqlite_backend.py   # SQLite storage (built-in)
+│   │   └── redis_backend.py    # Redis storage (optional)
+│   └── vector/         # Vector Similarity
+│       ├── base.py             # VectorStore ABC + SearchResult
+│       └── numpy_backend.py    # NumPy cosine similarity (built-in)
+├── ext/                # Extension Adapters
+│   ├── langchain/      # LangChain integration
+│   │   ├── memory.py           # AgenticOSMemory
+│   │   ├── retriever.py        # AgenticOSRetriever
+│   │   └── tool.py             # AgenticOSGraphTool
+│   ├── llamaindex/     # LlamaIndex integration
+│   │   └── vector_store.py     # AgenticOSVectorStore
+│   └── visualization/  # Interactive HTML Visualization
+│       ├── graph_visualizer.py # D3.js knowledge graph
+│       └── tree_visualizer.py  # D3.js thought tree
 ├── plugins/            # Plugin Interface
 │   ├── base.py                 # Abstract interfaces (LLM, Evaluator, Action)
 │   └── mock.py                 # Mock implementations for testing
@@ -309,6 +384,24 @@ class MyEvaluator(Evaluator):
         return score
 ```
 
+### LangChain Integration
+
+```python
+from agentic_os.ext.langchain import AgenticOSMemory, AgenticOSRetriever, AgenticOSGraphTool
+
+memory = AgenticOSMemory(memory_manager=my_mm)
+retriever = AgenticOSRetriever(memory_manager=my_mm)
+tool = AgenticOSGraphTool(memory_manager=my_mm)
+```
+
+### LlamaIndex Integration
+
+```python
+from agentic_os.ext.llamaindex import AgenticOSVectorStore
+
+vector_store = AgenticOSVectorStore(wrapped_store=my_numpy_store)
+```
+
 ---
 
 ## Development
@@ -337,10 +430,11 @@ Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for g
 
 ## Roadmap
 
-- [ ] Persistent storage backends (SQLite, Redis)
-- [ ] Vector similarity retrieval (optional embedding support)
-- [ ] Async API for concurrent MCTS rollouts
-- [ ] LangChain / LlamaIndex integration adapters
-- [ ] Visualization tools (Graphviz export, interactive HTML)
+- [x] Persistent storage backends (SQLite, Redis)
+- [x] Vector similarity retrieval (NumPy built-in, FAISS/Milvus/ChromaDB adapters)
+- [x] Async API for concurrent MCTS rollouts
+- [x] LangChain / LlamaIndex integration adapters
+- [x] Visualization tools (interactive D3.js HTML)
+- [x] Multi-agent shared memory graph
 - [ ] Temporal decay with configurable curves
-- [ ] Multi-agent shared memory graph
+- [ ] Streaming event system for real-time Agent coordination

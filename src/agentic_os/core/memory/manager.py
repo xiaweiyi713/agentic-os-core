@@ -106,12 +106,13 @@ class MemoryManager:
             >>> mm.recall("production", top_k=5)
         """
         results: list[MemoryNode] = []
+        from agentic_os.core.graph.node import create_episode
+        q_lower = query.lower()
 
         # Search from working memory
         for _key, entry in self.working.peek_all():
             content = entry.get("content", "")
-            if query.lower() in content.lower():
-                from agentic_os.core.graph.node import create_episode
+            if q_lower in content.lower():
                 results.append(create_episode(content, **entry.get("metadata", {})))
 
         # Retrieve from long-term memory

@@ -6,3 +6,12 @@ from agentic_os.core.memory.manager import MemoryManager as MemoryManager
 from agentic_os.core.memory.shared import AgentMemoryHandle as AgentMemoryHandle
 from agentic_os.core.memory.shared import SharedMemoryGraph as SharedMemoryGraph
 from agentic_os.core.memory.working import WorkingMemory as WorkingMemory
+
+__all__ = [
+    "AgentMemoryHandle",
+    "LongTermMemory",
+    "MemoryManager",
+    "RetrievalStrategy",
+    "SharedMemoryGraph",
+    "WorkingMemory",
+]

@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 from unittest.mock import MagicMock
 
 from agentic_os.core.memory.manager import MemoryManager

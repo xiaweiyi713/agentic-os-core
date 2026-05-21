@@ -143,8 +143,9 @@ class MCTS:
             A leaf node or an unvisited child ready for expansion.
         """
         while not node.is_leaf:
-            if any(c.visits == 0 for c in node.children):
-                return next(c for c in node.children if c.visits == 0)
+            for c in node.children:
+                if c.visits == 0:
+                    return c
             node = max(node.children, key=lambda c: self._ucb1(c))
         return node
 

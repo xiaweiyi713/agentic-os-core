@@ -33,6 +33,7 @@ class ThoughtNode:
     visits: int = 0
     parent: ThoughtNode | None = field(default=None, repr=False)
     children: list[ThoughtNode] = field(default_factory=list)
+    _depth: int = field(default=0, repr=False)
 
     @property
     def is_root(self) -> bool:
@@ -66,8 +67,6 @@ class ThoughtNode:
     def depth(self) -> int:
         """Return the depth of this node (root is 0).
 
-        Computed by walking parent pointers upward.
-
         Returns:
             The number of edges from this node to the root.
 
@@ -78,12 +77,9 @@ class ThoughtNode:
             root.children.append(child)
             assert child.depth == 1
         """
-        d = 0
-        node = self.parent
-        while node is not None:
-            d += 1
-            node = node.parent
-        return d
+        if self.parent is not None and self._depth == 0:
+            self._depth = self.parent.depth + 1
+        return self._depth
 
     def best_child(self) -> ThoughtNode | None:
         """Return the child with the highest cumulative score.
@@ -141,3 +137,21 @@ class ThoughtNode:
             assert node.avg_score == 2.0
         """
         return self.score / max(self.visits, 1)
+
+    def subtree_size(self) -> int:
+        """Return the total number of nodes in this subtree (inclusive).
+
+        Returns:
+            Number of nodes in the subtree rooted at this node.
+
+        Example::
+
+            root = ThoughtNode(thought="Root")
+            root.children.append(ThoughtNode(thought="A"))
+            root.children.append(ThoughtNode(thought="B"))
+            assert root.subtree_size() == 3
+        """
+        count = 1
+        for child in self.children:
+            count += child.subtree_size()
+        return count
